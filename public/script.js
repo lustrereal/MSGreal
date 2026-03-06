@@ -17,16 +17,18 @@ let player;
 let otherPlayers = {};
 let bullets = {};
 let keys;
+let ownData;
 let name = '';
 let lastShot = 0;
 
 // Home screen
 document.getElementById('join-button').addEventListener('click', () => {
   name = document.getElementById('player-name').value || 'Player';
+  let color = document.getElementById('player-color').value;
   document.getElementById('home-screen').style.display = 'none';
   document.getElementById('game-container').style.display = 'block';
   game = new Phaser.Game(config);
-  socket.emit('join', name);
+  socket.emit('join', { name, color });
 });
 
 // Chat
@@ -38,6 +40,12 @@ document.getElementById('send-chat').addEventListener('click', () => {
   }
 });
 
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('send-chat').click();
+  }
+});
+
 socket.on('chat', (data) => {
   let chat = document.getElementById('chat-messages');
   chat.innerHTML += `<p><strong>${data.name}:</strong> ${data.msg}</p>`;
@@ -45,53 +53,56 @@ socket.on('chat', (data) => {
 });
 
 function preload() {
-  // No assets needed for simple shapes
+  // No assets
 }
 
 function create() {
   keys = this.input.keyboard.addKeys({
-    up: 'W', down: 'S', left: 'A', right: 'D', space: 'SPACE'
+    up: 'W', down: 'S', left: 'A', right: 'D'
   });
+  player = this.add.rectangle(400, 300, 20, 20, 0x888888).setOrigin(0.5);
 }
 
 function update(time) {
-  if (!player) {
-    player = this.add.rectangle(0, 0, 20, 20, 0x00ff00);
-    player.setOrigin(0.5);
-  }
-
-  // Movement
-  let velocityX = 0, velocityY = 0;
-  if (keys.up.isDown) velocityY = -3;
-  if (keys.down.isDown) velocityY = 3;
-  if (keys.left.isDown) velocityX = -3;
-  if (keys.right.isDown) velocityX = 3;
-
-  player.x += velocityX;
-  player.y += velocityY;
-
-  // Rotation towards mouse (simple top-view aim)
   let pointer = this.input.activePointer;
-  player.rotation = Phaser.Math.Angle.Between(player.x, player.y, pointer.x, pointer.y);
+  let velocityX = 0, velocityY = 0;
+  if (keys.up.isDown) velocityY -= 4;
+  if (keys.down.isDown) velocityY += 4;
+  if (keys.left.isDown) velocityX -= 4;
+  if (keys.right.isDown) velocityX += 4;
 
+  player.x = Math.max(10, Math.min(790, player.x + velocityX));
+  player.y = Math.max(10, Math.min(590, player.y + velocityY));
+
+  // Rotate to mouse
+  player.rotation = Phaser.Math.Angle.Between(player.x, player.y, pointer.worldX, pointer.worldY);
   socket.emit('move', { x: player.x, y: player.y, rotation: player.rotation });
 
-  // Shooting
-  if (keys.space.isDown && time > lastShot + 200) {
+  // Shoot on left click
+  if (pointer.leftButtonDown() && time > lastShot + 200) {
+    let angle = player.rotation;
+    let bulletId = Math.random().toString(36).substr(2, 9);
     let bullet = {
-      id: Math.random().toString(36).substr(2, 9),
-      owner: socket.id,
+      id: bulletId,
       x: player.x,
       y: player.y,
-      vx: Math.cos(player.rotation) * 10,
-      vy: Math.sin(player.rotation) * 10
+      vx: Math.cos(angle) * 10,
+      vy: Math.sin(angle) * 10
     };
     socket.emit('shoot', bullet);
     lastShot = time;
   }
 }
 
-// Update other players
+// You joined
+socket.on('youJoined', (data) => {
+  ownData = data;
+  player.setFillStyle(data.color);
+  player.x = data.x;
+  player.y = data.y;
+});
+
+// Update other players (skip self)
 socket.on('updatePlayers', (playersData) => {
   for (let id in otherPlayers) {
     if (!playersData[id]) {
@@ -103,8 +114,7 @@ socket.on('updatePlayers', (playersData) => {
     if (id === socket.id) continue;
     let p = playersData[id];
     if (!otherPlayers[id]) {
-      otherPlayers[id] = game.scene.scenes[0].add.rectangle(p.x, p.y, 20, 20, 0xff0000);
-      otherPlayers[id].setOrigin(0.5);
+      otherPlayers[id] = game.scene.scenes[0].add.rectangle(p.x, p.y, 20, 20, p.color).setOrigin(0.5);
     } else {
       otherPlayers[id].x = p.x;
       otherPlayers[id].y = p.y;
@@ -116,20 +126,51 @@ socket.on('updatePlayers', (playersData) => {
 // Bullets
 socket.on('newBullet', (bullet) => {
   let scene = game.scene.scenes[0];
-  bullets[bullet.id] = scene.add.line(0, 0, bullet.x, bullet.y, bullet.x + bullet.vx, bullet.y + bullet.vy, 0xffffff).setOrigin(0);
+  bullets[bullet.id] = scene.add.line(bullet.x, bullet.y, bullet.x + bullet.vx * 1.5, bullet.y + bullet.vy * 1.5, 0xffffff).setOrigin(0);
+  bullets[bullet.id].setLineWidth(3);
 });
 
 socket.on('updateBullets', (newBullets) => {
+  // Remove missing
+  for (let id in bullets) {
+    if (!newBullets.find(b => b.id === id)) {
+      bullets[id].destroy();
+      delete bullets[id];
+    }
+  }
+  // Update/add
   for (let b of newBullets) {
-    if (bullets[b.id]) {
-      bullets[b.id].setTo(b.x, b.y, b.x + b.vx, b.y + b.vy);
+    let scene = game.scene.scenes[0];
+    if (!bullets[b.id]) {
+      bullets[b.id] = scene.add.line(b.x, b.y, b.x + b.vx * 1.5, b.y + b.vy * 1.5, 0xffffff).setOrigin(0);
+      bullets[b.id].setLineWidth(3);
+    } else {
+      bullets[b.id].setTo(b.x, b.y, b.x + b.vx * 1.5, b.y + b.vy * 1.5);
     }
   }
 });
 
+// Player died
 socket.on('playerDied', (id) => {
   if (otherPlayers[id]) {
     otherPlayers[id].destroy();
     delete otherPlayers[id];
+  }
+  if (id === socket.id) {
+    // Reset to home screen
+    if (game) {
+      game.destroy(true);
+      game = null;
+    }
+    document.getElementById('game-container').style.display = 'none';
+    document.getElementById('home-screen').style.display = 'block';
+    document.getElementById('player-name').value = '';
+    document.getElementById('player-color').value = '#00ff00';
+    document.getElementById('chat-messages').innerHTML = '';
+    player = null;
+    otherPlayers = {};
+    bullets = {};
+    lastShot = 0;
+    ownData = null;
   }
 });
