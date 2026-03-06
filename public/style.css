@@ -1,0 +1,55 @@
+body {
+  margin: 0;
+  background: #222;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#home-screen {
+  text-align: center;
+}
+
+#home-screen input {
+  padding: 10px;
+  margin: 10px;
+}
+
+#home-screen button {
+  padding: 10px 20px;
+  background: green;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#game-container {
+  position: relative;
+}
+
+#chat-container {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 300px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+}
+
+#chat-messages {
+  height: 100px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+#chat-input {
+  width: 200px;
+  padding: 5px;
+}
+
+#send-chat {
+  padding: 5px 10px;
+}
