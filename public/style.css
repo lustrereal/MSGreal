@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: #222;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
   color: white;
   font-family: Arial, sans-serif;
   display: flex;
@@ -11,23 +11,59 @@ body {
 
 #home-screen {
   text-align: center;
+  background: rgba(0,0,0,0.8);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-#home-screen input {
-  padding: 10px;
+#home-screen h1 {
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+#home-screen input[type="text"] {
+  padding: 12px;
   margin: 10px;
+  width: 250px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+#home-screen input[type="color"] {
+  width: 60px;
+  height: 50px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 10px;
+  padding: 5px;
 }
 
 #home-screen button {
-  padding: 10px 20px;
-  background: green;
+  padding: 15px 30px;
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
   color: white;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+
+#home-screen button:hover {
+  transform: scale(1.05);
 }
 
 #game-container {
   position: relative;
+  width: 800px;
+  height: 600px;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 #chat-container {
@@ -35,21 +71,37 @@ body {
   bottom: 10px;
   left: 10px;
   width: 300px;
-  background: rgba(0,0,0,0.7);
-  padding: 10px;
+  background: rgba(0,0,0,0.8);
+  padding: 15px;
+  border-radius: 10px;
 }
 
 #chat-messages {
-  height: 100px;
+  height: 120px;
   overflow-y: auto;
   margin-bottom: 10px;
+  font-size: 14px;
+}
+
+#chat-messages p {
+  margin: 5px 0;
 }
 
 #chat-input {
   width: 200px;
-  padding: 5px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  background: #333;
+  color: white;
 }
 
 #send-chat {
-  padding: 5px 10px;
+  padding: 8px 15px;
+  background: #4ecdc4;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
 }
