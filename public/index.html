@@ -10,14 +10,18 @@
 </head>
 <body>
   <div id="home-screen">
-    <h1>Welcome to 2D Top-View Shooter</h1>
-    <input type="text" id="player-name" placeholder="Enter your name">
+    <h1>🎮 2D Top-View Shooter</h1>
+    <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+    <br>
+    <label>Choose Color:</label>
+    <input type="color" id="player-color" value="#00ff00">
+    <br>
     <button id="join-button">Join Game</button>
   </div>
   <div id="game-container" style="display: none;">
     <div id="chat-container">
       <div id="chat-messages"></div>
-      <input type="text" id="chat-input" placeholder="Type message...">
+      <input type="text" id="chat-input" placeholder="Type message..." maxlength="100">
       <button id="send-chat">Send</button>
     </div>
   </div>
