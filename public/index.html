@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Multiplayer Shooter</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+</head>
+<body>
+  <div id="home-screen">
+    <h1>Welcome to 2D Top-View Shooter</h1>
+    <input type="text" id="player-name" placeholder="Enter your name">
+    <button id="join-button">Join Game</button>
+  </div>
+  <div id="game-container" style="display: none;">
+    <div id="chat-container">
+      <div id="chat-messages"></div>
+      <input type="text" id="chat-input" placeholder="Type message...">
+      <button id="send-chat">Send</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
